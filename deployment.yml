@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: etherum-etl
+    app.kubernetes.io/instance: etherum-etl
+  name: etherum-etl
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: etherum-etl
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: etherum-etl
+    spec:
+      containers:
+      - env:
+        - name: START_BLOCK
+          value: '17582131'
+        - name: MAX_WORKER
+          value: '5'
+        - name: BATCH_SIZE
+          value: '10'
+        - name: OUTPUT
+          value: 'kafka/dev-kafka-kafka-external-0.dev:9092'
+        - name: RPC_URL
+          value: http://eth.rpc.onsig.ai:18888/9c1bee8fd066e78a23089a57d11235b4
+        - name: TOPIC_PREFIX
+          value: "eth"
+        image: supnobita/ethereum-etl:2.2.1
+        imagePullPolicy: IfNotPresent
+        name: etherum-etl
+        command: 
+          - /bin/bash
+        volumeMounts:
+        - mountPath: /data
+          name: ethereum-data
+        resources:
+          requests:
+            memory: 500Mi
+            cpu: 1
+      volumes:
+      - name: ethereum-data
+        persistentVolumeClaim:
+          claimName: ethereum-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ethereum-data
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: do-block-storage
