@@ -92,8 +92,6 @@ def create_item_exporter(output, *args, **kwargs):
         topic_prefix = kwargs.get("topic_prefix")
         if topic_prefix and not topic_prefix.endswith("."):
             topic_prefix += "."
-        else:
-            topic_prefix = ""
         item_exporter = KafkaItemExporter(output, item_type_to_topic_mapping={
             'block': topic_prefix + 'blocks',
             'transaction': topic_prefix + 'transactions',
